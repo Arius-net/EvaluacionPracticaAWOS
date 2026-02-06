@@ -1,33 +1,20 @@
 import { query } from '@/lib/db';
 import Link from 'next/link';
 
+interface InventoryRow {
+  name: string;
+  stock: number;
+  categoria: string;
+  estatus_riesgo: 'Agotado' | 'Bajo' | 'Medio' | 'Óptimo';
+}
+
 export default async function InventoryRisk() {
   const { rows } = await query('SELECT * FROM vw_inventory_risk ORDER BY stock ASC');
   
-  const agotado = rows.filter(r => r.estatus_riesgo === 'Agotado').length;
-  const bajo = rows.filter(r => r.estatus_riesgo === 'Bajo').length;
-  const medio = rows.filter(r => r.estatus_riesgo === 'Medio').length;
-  const optimo = rows.filter(r => r.estatus_riesgo === 'Óptimo').length;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Agotado': return 'bg-red-100 text-red-800 border-red-200';
-      case 'Bajo': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'Medio': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'Óptimo': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Agotado': return '🔴';
-      case 'Bajo': return '🟠';
-      case 'Medio': return '🟡';
-      case 'Óptimo': return '🟢';
-      default: return '⚪';
-    }
-  };
+  const agotado = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Agotado').length;
+  const bajo = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Bajo').length;
+  const medio = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Medio').length;
+  const optimo = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Óptimo').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-50">
@@ -185,51 +172,59 @@ export default async function InventoryRisk() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {rows.map((r, i) => {
-                  const getAction = (status: string) => {
-                    switch (status) {
-                      case 'Agotado': return { text: 'URGENTE: Reabastecer ahora', icon: '🚨' };
-                      case 'Bajo': return { text: 'Reabastecer pronto', icon: '⚡' };
-                      case 'Medio': return { text: 'Monitorear', icon: '👁️' };
-                      case 'Óptimo': return { text: 'Sin acción requerida', icon: '✅' };
-                      default: return { text: 'Revisar', icon: '🔍' };
-                    }
-                  };
-
-                  const action = getAction(r.estatus_riesgo);
-
-                  return (
-                    <tr key={i} className={`hover:bg-gray-50 transition-colors ${r.estatus_riesgo === 'Agotado' ? 'bg-red-50' : ''}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-3xl">{getStatusIcon(r.estatus_riesgo)}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center">
-                            📦
-                          </div>
-                          <span className="text-sm font-medium text-gray-900">{r.name}</span>
+                {rows.map((r: InventoryRow, i: number) => (
+                  <tr key={i} className={`hover:bg-gray-50 transition-colors ${r.estatus_riesgo === 'Agotado' ? 'bg-red-50' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-3xl">
+                        {r.estatus_riesgo === 'Agotado' && '🔴'}
+                        {r.estatus_riesgo === 'Bajo' && '🟠'}
+                        {r.estatus_riesgo === 'Medio' && '🟡'}
+                        {r.estatus_riesgo === 'Óptimo' && '🟢'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center">
+                          📦
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 border-4 border-gray-200">
-                          <span className="text-2xl font-bold text-gray-900">{r.stock}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 ${getStatusColor(r.estatus_riesgo)}`}>
-                          {r.estatus_riesgo}
+                        <span className="text-sm font-medium text-gray-900">{r.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 border-4 border-gray-200">
+                        <span className="text-2xl font-bold text-gray-900">{r.stock}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {r.estatus_riesgo === 'Agotado' && (
+                        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 bg-red-100 text-red-800 border-red-200">
+                          Riesgo Crítico
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-2xl">{action.icon}</span>
-                          <span className="text-xs font-medium text-gray-700">{action.text}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                      )}
+                      {r.estatus_riesgo === 'Bajo' && (
+                        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 bg-orange-100 text-orange-800 border-orange-200">
+                          Riesgo Crítico
+                        </span>
+                      )}
+                      {r.estatus_riesgo === 'Medio' && (
+                        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 bg-yellow-100 text-yellow-800 border-yellow-200">
+                          Riesgo Medio
+                        </span>
+                      )}
+                      {r.estatus_riesgo === 'Óptimo' && (
+                        <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 bg-green-100 text-green-800 border-green-200">
+                          Sin Riesgo
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-2xl">🔍</span>
+                        <span className="text-xs font-medium text-gray-700">Revisar</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

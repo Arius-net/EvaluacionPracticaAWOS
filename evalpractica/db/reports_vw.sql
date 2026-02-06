@@ -25,8 +25,9 @@ SELECT
     c.name as categoria,
     CASE 
         WHEN p.stock = 0 THEN 'Agotado'
-        WHEN p.stock < 10 THEN 'Riesgo Crítico'
-        ELSE 'Normal'
+        WHEN p.stock BETWEEN 1 AND 5 THEN 'Bajo'
+        WHEN p.stock BETWEEN 6 AND 10 THEN 'Medio'
+        ELSE 'Óptimo'
     END as estatus_riesgo
 FROM products p
 JOIN categories c ON p.category_id = c.id
