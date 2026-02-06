@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 0620 # Contraseña del superusuario
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña del superusuario
     ports:
       - "5432:5432"
     volumes:
