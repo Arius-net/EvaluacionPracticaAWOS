@@ -15,23 +15,23 @@ CREATE TABLE products(
 CREATE TABLE customers(
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE
 );
 
-CREATE TABLE orders(
+CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
-    customer_id INT REFERENCES customers(id),
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    customer_id INTEGER REFERENCES customers(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Esta es la columna que falta
     status VARCHAR(50) NOT NULL,
-    channel VARCHAR(50) NOT NULL
+    channel VARCHAR(50) NOT NULL 
 );
 
-CREATE TABLE order_items(
+CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
-    order_id INT REFERENCES orders(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id),
-    quantity INT NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10,2) NOT NULL
+    order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES products(id),
+    qty INTEGER NOT NULL CHECK (qty > 0), -- Asegúrate de que esta línea exista
+    unit_price DECIMAL(10, 2) NOT NULL
 );
 
 CREATE TABLE payments(
