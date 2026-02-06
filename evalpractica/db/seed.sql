@@ -1,16 +1,13 @@
--- Insertar Categorías
 INSERT INTO categories (name) VALUES ('Bebidas Calientes'), ('Bebidas Frías'), ('Repostería');
 
--- Insertar Productos (incluyendo algunos con stock bajo para vw_inventory_risk)
 INSERT INTO products (name, category_id, price, stock) VALUES 
 ('Americano', 1, 35.00, 50),
-('Capuchino', 1, 45.00, 2), -- Riesgo
+('Capuchino', 1, 45.00, 2),
 ('Latte', 1, 48.00, 15),
 ('Frappé Oreo', 2, 65.00, 10),
-('Té Helado', 2, 30.00, 3), -- Riesgo
+('Té Helado', 2, 30.00, 3),
 ('Croissant', 3, 25.00, 5);
 
--- Insertar Clientes (mínimo 10 para paginación)
 INSERT INTO customers (name, email) VALUES 
 ('Juan Perez', 'juan@mail.com'), ('Ana G.', 'ana@mail.com'), 
 ('Luis M.', 'luis@mail.com'), ('Carla R.', 'carla@mail.com'),
@@ -18,7 +15,6 @@ INSERT INTO customers (name, email) VALUES
 ('Rosa L.', 'rosa@mail.com'), ('Hugo V.', 'hugo@mail.com'),
 ('Beto X.', 'beto@mail.com'), ('Sara M.', 'sara@mail.com');
 
--- Órdenes y pagos (simulando diferentes días)
 INSERT INTO orders (customer_id, created_at, status, channel) VALUES 
 (1, CURRENT_DATE - INTERVAL '1 day', 'completed', 'counter'),
 (2, CURRENT_DATE, 'completed', 'app');

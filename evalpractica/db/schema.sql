@@ -21,7 +21,7 @@ CREATE TABLE customers(
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES customers(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Esta es la columna que falta
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) NOT NULL,
     channel VARCHAR(50) NOT NULL 
 );
@@ -30,7 +30,7 @@ CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
     product_id INTEGER REFERENCES products(id),
-    qty INTEGER NOT NULL CHECK (qty > 0), -- Asegúrate de que esta línea exista
+    qty INTEGER NOT NULL CHECK (qty > 0),
     unit_price DECIMAL(10, 2) NOT NULL
 );
 

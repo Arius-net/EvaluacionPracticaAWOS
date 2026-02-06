@@ -41,7 +41,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -58,9 +57,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section */}
         <div className="mb-12 text-center">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
             Panel de Reportes
@@ -70,18 +67,17 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Reports Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reports.map((report, index) => (
             <Link
               key={index}
               href={report.href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
             >
-              {/* Gradient Background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${report.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
               
-              {/* Content */}
               <div className="relative p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-4xl">{report.icon}</div>
@@ -107,7 +103,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Stats Section */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between">
@@ -147,7 +142,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="mt-20 border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-sm text-gray-500">
