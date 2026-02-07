@@ -6,17 +6,18 @@ services:
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # Contraseña del superusuario
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres} # Contraseña del superusuario
     ports:
       - "5432:5432"
     volumes:
       # Mapeo de la carpeta db para ejecución automática al iniciar
       # Los archivos se ejecutan en orden alfabético
       - ./db/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
-      - ./db/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
-      - ./db/reports_vw.sql:/docker-entrypoint-initdb.d/3-reports_vw.sql
-      - ./db/indexes.sql:/docker-entrypoint-initdb.d/4-indexes.sql
-      - ./db/roles.sql:/docker-entrypoint-initdb.d/5-roles.sql
+      - ./db/migrate.sql:/docker-entrypoint-initdb.d/2-migrate.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/3-seed.sql
+      - ./db/reports_vw.sql:/docker-entrypoint-initdb.d/4-reports_vw.sql
+      - ./db/indexes.sql:/docker-entrypoint-initdb.d/5-indexes.sql
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/6-roles.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -32,8 +33,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Aquí usamos las credenciales del usuario limitado 'app_user'
-      DATABASE_URL: "postgresql://app_user:app_password@db:5432/postgres"
+      DATABASE_URL: "postgresql://app_user:0620@db:5432/postgres"
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: app_user
+      DB_PASSWORD: 0620
+      DB_NAME: postgres
       NODE_ENV: development
     depends_on:
       db:

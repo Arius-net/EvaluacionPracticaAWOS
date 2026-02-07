@@ -1,14 +1,21 @@
-import { query } from '@/lib/db';
+import { getTopProductsReport } from '@/lib/services/reports';
+import { z } from 'zod';
 import Link from 'next/link';
 
-export default async function TopProducts({ searchParams }: { searchParams: Promise<any> }) {
+const searchSchema = z.object({
+  search: z.string().trim().max(100).optional().default(''),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(5).max(50).default(12),
+});
+
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function TopProducts({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
-  const search = params.search || '';
-  
-  const { rows } = await query(
-    "SELECT * FROM vw_top_products_ranked WHERE name ILIKE $1 ORDER BY ranking ASC",
-    [`%${search}%`]
-  );
+  const { search, page, limit } = searchSchema.parse(params);
+
+  const { rows, total } = await getTopProductsReport({ search, page, limit });
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   const topProduct = rows[0];
   const totalRevenue = rows.reduce((acc, curr) => acc + Number(curr.revenue), 0);
@@ -160,6 +167,32 @@ export default async function TopProducts({ searchParams }: { searchParams: Prom
             <div className="text-6xl mb-4">🔍</div>
             <p className="text-gray-500 text-lg">No se encontraron productos</p>
             <p className="text-gray-400 text-sm mt-2">Intenta con otra búsqueda</p>
+          </div>
+        )}
+
+        {rows.length > 0 && (
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {page > 1 && (
+              <Link
+                href={`?search=${encodeURIComponent(search)}&page=${page - 1}&limit=${limit}`}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
+              >
+                ← Anterior
+              </Link>
+            )}
+
+            <span className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600">
+              Pagina {page} de {totalPages}
+            </span>
+
+            {page < totalPages && (
+              <Link
+                href={`?search=${encodeURIComponent(search)}&page=${page + 1}&limit=${limit}`}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
+              >
+                Siguiente →
+              </Link>
+            )}
           </div>
         )}
       </main>

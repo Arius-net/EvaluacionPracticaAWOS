@@ -1,20 +1,26 @@
-import { query } from '@/lib/db';
+import { getInventoryCategories, getInventoryRiskReport, type InventoryRiskRow } from '@/lib/services/reports';
+import { z } from 'zod';
 import Link from 'next/link';
 
-interface InventoryRow {
-  name: string;
-  stock: number;
-  categoria: string;
-  estatus_riesgo: 'Agotado' | 'Bajo' | 'Medio' | 'Óptimo';
-}
+const filterSchema = z.object({
+  category: z.string().trim().max(100).optional().default('all'),
+});
 
-export default async function InventoryRisk() {
-  const { rows } = await query('SELECT * FROM vw_inventory_risk ORDER BY stock ASC');
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function InventoryRisk({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
+  const { category } = filterSchema.parse(params);
+
+  const [rows, categories] = await Promise.all([
+    getInventoryRiskReport({ category }),
+    getInventoryCategories(),
+  ]);
   
-  const agotado = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Agotado').length;
-  const bajo = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Bajo').length;
-  const medio = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Medio').length;
-  const optimo = rows.filter((r: InventoryRow) => r.estatus_riesgo === 'Óptimo').length;
+  const agotado = rows.filter((r: InventoryRiskRow) => r.estatus_riesgo === 'Agotado').length;
+  const bajo = rows.filter((r: InventoryRiskRow) => r.estatus_riesgo === 'Bajo').length;
+  const medio = rows.filter((r: InventoryRiskRow) => r.estatus_riesgo === 'Medio').length;
+  const optimo = rows.filter((r: InventoryRiskRow) => r.estatus_riesgo === 'Optimo').length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-50">
@@ -40,6 +46,32 @@ export default async function InventoryRisk() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+          <form className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[220px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+              <select
+                name="category"
+                defaultValue={category}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="all">Todas</option>
+                {categories.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg font-medium"
+            >
+              Filtrar
+            </button>
+          </form>
+        </div>
+
         {/* Alert Banner */}
         {agotado > 0 && (
           <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
@@ -172,14 +204,14 @@ export default async function InventoryRisk() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {rows.map((r: InventoryRow, i: number) => (
+                {rows.map((r: InventoryRiskRow, i: number) => (
                   <tr key={i} className={`hover:bg-gray-50 transition-colors ${r.estatus_riesgo === 'Agotado' ? 'bg-red-50' : ''}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-3xl">
                         {r.estatus_riesgo === 'Agotado' && '🔴'}
                         {r.estatus_riesgo === 'Bajo' && '🟠'}
                         {r.estatus_riesgo === 'Medio' && '🟡'}
-                        {r.estatus_riesgo === 'Óptimo' && '🟢'}
+                        {r.estatus_riesgo === 'Optimo' && '🟢'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -211,7 +243,7 @@ export default async function InventoryRisk() {
                           Riesgo Medio
                         </span>
                       )}
-                      {r.estatus_riesgo === 'Óptimo' && (
+                      {r.estatus_riesgo === 'Optimo' && (
                         <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border-2 bg-green-100 text-green-800 border-green-200">
                           Sin Riesgo
                         </span>

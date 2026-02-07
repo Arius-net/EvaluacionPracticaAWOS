@@ -1,25 +1,22 @@
-import { query } from '@/lib/db';
+import { getCustomerValueReport } from '@/lib/services/reports';
 import { z } from 'zod';
 import Link from 'next/link';
 
 const pageSchema = z.object({
-  page: z.string().transform(Number).default('1'),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(5).max(50).default(10),
 });
 
-export default async function CustomerValue({ searchParams }: { searchParams: Promise<any> }) {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function CustomerValue({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
-  const { page } = pageSchema.parse(params);
-  
-  const limit = 10;
+  const { page, limit } = pageSchema.parse(params);
+
   const offset = (page - 1) * limit;
 
-  const { rows } = await query(
-    'SELECT * FROM vw_customer_value ORDER BY total_gastado DESC LIMIT $1 OFFSET $2',
-    [limit, offset]
-  );
-
-  const { rows: totalRows } = await query('SELECT COUNT(*) as total FROM vw_customer_value');
-  const totalCustomers = Number(totalRows[0].total);
+  const { rows, total } = await getCustomerValueReport({ page, limit });
+  const totalCustomers = total;
   const totalPages = Math.ceil(totalCustomers / limit);
 
   const topCustomer = rows[0];
@@ -185,7 +182,7 @@ export default async function CustomerValue({ searchParams }: { searchParams: Pr
           <div className="mt-6 flex items-center justify-center gap-2">
             {page > 1 && (
               <Link
-                href={`?page=${page - 1}`}
+                href={`?page=${page - 1}&limit=${limit}`}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
               >
                 ← Anterior
@@ -208,7 +205,7 @@ export default async function CustomerValue({ searchParams }: { searchParams: Pr
                 return (
                   <Link
                     key={i}
-                    href={`?page=${pageNum}`}
+                    href={`?page=${pageNum}&limit=${limit}`}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       page === pageNum
                         ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-md'
@@ -223,7 +220,7 @@ export default async function CustomerValue({ searchParams }: { searchParams: Pr
 
             {page < totalPages && (
               <Link
-                href={`?page=${page + 1}`}
+                href={`?page=${page + 1}&limit=${limit}`}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
               >
                 Siguiente →

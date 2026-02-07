@@ -1,8 +1,10 @@
-
 CREATE USER app_user WITH PASSWORD '0620';
 
 GRANT CONNECT ON DATABASE postgres TO app_user;
 GRANT USAGE ON SCHEMA public TO app_user;
+
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM app_user;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM app_user;
 
 GRANT SELECT ON vw_sales_daily TO app_user;
 GRANT SELECT ON vw_top_products_ranked TO app_user;

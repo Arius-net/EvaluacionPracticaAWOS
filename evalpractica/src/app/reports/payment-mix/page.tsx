@@ -1,8 +1,8 @@
-import { query } from '@/lib/db';
+import { getPaymentMixReport } from '@/lib/services/reports';
 import Link from 'next/link';
 
 export default async function PaymentMix() {
-  const { rows } = await query('SELECT * FROM vw_payment_mix ORDER BY total_transacciones DESC');
+  const rows = await getPaymentMixReport();
   
   const totalTransactions = rows.reduce((acc, curr) => acc + Number(curr.total_transacciones), 0);
   const topMethod = rows[0];

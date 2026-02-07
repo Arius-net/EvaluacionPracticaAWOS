@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { getSalesDailyReport } from '@/lib/services/reports';
 import { z } from 'zod';
 import Link from 'next/link';
 
@@ -7,14 +7,13 @@ const schema = z.object({
   date_to: z.string().optional().default('2100-12-31'),
 });
 
-export default async function SalesDaily({ searchParams }: { searchParams: Promise<any> }) {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function SalesDaily({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
   const { date_from, date_to } = schema.parse(params);
-  
-  const { rows } = await query(
-    'SELECT * FROM vw_sales_daily WHERE fecha BETWEEN $1 AND $2 ORDER BY fecha DESC',
-    [date_from, date_to]
-  );
+
+  const rows = await getSalesDailyReport({ dateFrom: date_from, dateTo: date_to });
 
   const total = rows.reduce((acc, curr) => acc + Number(curr.total_ventas), 0);
   const totalTickets = rows.reduce((acc, curr) => acc + Number(curr.tickets), 0);
